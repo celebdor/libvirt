@@ -1141,9 +1141,15 @@ int qemuDomainAttachNetDevice(virConnectPtr conn,
             }
 
             vport = virDomainNetGetActualVirtPortProfile(net);
-            if (vport && vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_OPENVSWITCH)
-               ignore_value(virNetDevOpenvswitchRemovePort(
-                               virDomainNetGetActualBridgeName(net), net->ifname));
+            if (vport) {
+                if (vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_MIDONET) {
+                    ignore_value(virNetDevMidonetUnbindPort(vport));
+                } else if (vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_OPENVSWITCH) {
+                    ignore_value(virNetDevOpenvswitchRemovePort(
+                                     virDomainNetGetActualBridgeName(net),
+                                     net->ifname));
+                }
+            }
         }
 
         virDomainNetRemoveHostdev(vm->def, net);
@@ -2933,10 +2939,15 @@ qemuDomainRemoveNetDevice(virQEMUDriverPtr driver,
     }
 
     vport = virDomainNetGetActualVirtPortProfile(net);
-    if (vport && vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_OPENVSWITCH)
-        ignore_value(virNetDevOpenvswitchRemovePort(
-                        virDomainNetGetActualBridgeName(net),
-                        net->ifname));
+    if (vport) {
+        if (vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_MIDONET) {
+            ignore_value(virNetDevMidonetUnbindPort(vport));
+        } else if (vport->virtPortType == VIR_NETDEV_VPORT_PROFILE_OPENVSWITCH) {
+            ignore_value(virNetDevOpenvswitchRemovePort(
+                             virDomainNetGetActualBridgeName(net),
+                             net->ifname));
+        }
+    }
 
     networkReleaseActualDevice(vm->def, net);
     virDomainNetDefFree(net);

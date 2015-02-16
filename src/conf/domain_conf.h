@@ -42,6 +42,7 @@
 # include "virnetdevmacvlan.h"
 # include "virsysinfo.h"
 # include "virnetdevvportprofile.h"
+# include "virnetdevmidonet.h"
 # include "virnetdevopenvswitch.h"
 # include "virnetdevbandwidth.h"
 # include "virnetdevvlan.h"
